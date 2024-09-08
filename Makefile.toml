@@ -1,0 +1,87 @@
+[config]
+skip_core_tasks = true
+
+[tasks.format]
+description = "Run rustfmt"
+install_crate = "rustfmt"
+command = "cargo"
+args = ["fmt", "--", "--emit=files"]
+
+[tasks.clean-wasm]
+description = "Delete the wasm-target directory"
+script_runner = "@shell"
+script = '''
+rm -rf ./wasm-target/
+'''
+
+[tasks.clean]
+description = "Clean build files and wasm-target directory"
+dependencies = ["clean-wasm"]
+command = "cargo"
+args = ["clean"]
+
+[tasks.run-cargo-build]
+description = "Build the wasm binary"
+command = "cargo"
+args = ["build", "--release", "--target", "wasm32-unknown-unknown"]
+
+[tasks.run-opt]
+condition = { env_set = [ "RUN_OPTIMIZATION" ] }
+description = "Generate an optimized version of the wasm binary"
+dependencies = ["run-cargo-build"]
+install_crate = "wasm-opt"
+command = "wasm-opt"
+args = [
+    "-Oz",
+    "--output",
+    "target/wasm32-unknown-unknown/release/optimized.wasm",
+    "target/wasm32-unknown-unknown/release/playme.wasm",
+]
+
+[tasks.build-opt]
+condition = { env_set = [ "RUN_OPTIMIZATION" ] }
+description = "Generate optimized wasm binary and replace the old binary"
+dependencies = ["run-opt"]
+script_runner = "@shell"
+script = '''
+mv target/wasm32-unknown-unknown/release/optimized.wasm target/wasm32-unknown-unknown/release/playme.wasm
+'''
+
+[tasks.build-wasm-bin]
+description = "Build & link the wasm binary into a playable web-page"
+dependencies = ["build-opt"]
+install_crate = "wasm-bindgen-cli"
+command = "wasm-bindgen"
+args = [
+    "--out-name",
+    "playme",
+    "--out-dir",
+    "wasm-target/target",
+    "--target",
+    "web",
+    "target/wasm32-unknown-unknown/release/playme.wasm",
+]
+
+[tasks.copy-static-stuff]
+description = "Copy static site files into the wasm-target directory"
+dependencies = ["build-wasm-bin"]
+script_runner = "@shell"
+script = '''
+cp ./src/site/* ./wasm-target/
+'''
+
+[tasks.build]
+description = "Run full build process and put output in wasm-target directory"
+run_task = "copy-static-stuff"
+
+[tasks.build-release]
+env = { "RUN_OPTIMIZATION" = "true" }
+description = "Run full build process and put output in wasm-target directory"
+run_task = "copy-static-stuff"
+
+[tasks.serve]
+description = "Build and serve a copy of the playable page"
+dependencies = ["copy-static-stuff"]
+install_crate = "basic-http-server"
+command = "basic-http-server"
+args = ["./wasm-target"]
