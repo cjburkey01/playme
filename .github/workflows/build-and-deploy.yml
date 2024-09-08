@@ -29,7 +29,7 @@ jobs:
         run: cargo make build
 
       # Upload it to pages
-      - uses: actions/upload-pages-artifact@v4
+      - uses: actions/upload-pages-artifact@v3
         with:
           # Artifact name
           name: github-pages
