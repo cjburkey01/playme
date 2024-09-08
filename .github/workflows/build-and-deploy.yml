@@ -21,8 +21,7 @@ jobs:
         with:
           toolchain: nightly
           targets: wasm32-unknown-unknown
-      - name: Install cargo make
-        run: cargo install make
+      - uses: davidB/rust-cargo-make@v1
 
       # Build the game
       - name: Build release binary
