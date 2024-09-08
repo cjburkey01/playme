@@ -12,10 +12,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    
+    # Get me!
     - uses: actions/checkout@v4
 
     # Rust setup stuff
+    - name: Handle rust caching
+      uses: Swatinem/rust-cache@v2
     - name: Setup Rust toolchain
       uses: dtolnay/rust-toolchain@nightly
       with:
@@ -23,8 +25,6 @@ jobs:
         targets: wasm32-unknown-unknown
     - name: Download cargo make binary
       uses: davidB/rust-cargo-make@v1
-    - name: Handle rust caching
-      uses: Swatinem/rust-cache@v2
 
     # Build the game
     - name: Build release binary
