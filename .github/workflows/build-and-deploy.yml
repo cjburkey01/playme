@@ -1,0 +1,38 @@
+name: "Build and Deploy"
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Set up Rust
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: nightly
+        override: true
+    # Download the cargo make binary
+    - uses: davidB/rust-cargo-make@v1
+    - uses: actions/checkout@v1
+
+    # Build the game
+    - name: Build release binary
+      run: cargo make build
+
+    # Upload to GitHub pages and deploy!
+    - name: Upload GitHub Pages artifact
+      uses: actions/upload-pages-artifact@v3.0.1
+      with:
+        name: github-pages
+        path: wasm-target/
+    - name: Deploy GitHub Pages site
+      uses: actions/deploy-pages@v4.0.5
+      with:
+        artifact_name: github-pages
+
