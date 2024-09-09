@@ -179,6 +179,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "anyhow"
+version = "1.0.87"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "10f00e1f6e58a40e807377c75c6a7f97bf9044fab57816f2414e6f5f4499d7b8"
+
+[[package]]
 name = "approx"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -400,6 +406,30 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
+]
+
+[[package]]
+name = "bevy_asset_loader"
+version = "0.21.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "47863215e4454e0142cc7e0f7801ad256d44e690f43186743e3e2bc9da2de870"
+dependencies = [
+ "anyhow",
+ "bevy",
+ "bevy_asset_loader_derive",
+ "iyes_progress",
+ "path-slash",
+]
+
+[[package]]
+name = "bevy_asset_loader_derive"
+version = "0.21.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2b12bd14ec1f3e57760d01b239bd27ab5dd13547379e5a83c167c7162525f646"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.77",
 ]
 
 [[package]]
@@ -2156,6 +2186,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "49f1f14873335454500d59611f1cf4a4b0f786f9ac11f4312a78e4cf2566695b"
 
 [[package]]
+name = "iyes_progress"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "189dfbfb74fd3307536274b549c79cc7a3b076b8da067aa9fc2d6130eaca09ba"
+dependencies = [
+ "bevy_app",
+ "bevy_ecs",
+ "bevy_state",
+ "bevy_utils",
+]
+
+[[package]]
 name = "jni"
 version = "0.21.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2885,6 +2927,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
+name = "path-slash"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e91099d4268b0e11973f036e885d652fb0b21fedcf69738c627f94db6a44f42"
+
+[[package]]
 name = "percent-encoding"
 version = "2.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2950,7 +2998,9 @@ name = "playme"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy_asset_loader",
  "bevy_wasm_window_resize",
+ "iyes_progress",
 ]
 
 [[package]]

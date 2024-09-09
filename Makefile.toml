@@ -25,31 +25,9 @@ description = "Build the wasm binary"
 command = "cargo"
 args = ["build", "--release", "--target", "wasm32-unknown-unknown"]
 
-[tasks.run-opt]
-condition = { env_set = [ "RUN_OPTIMIZATION" ] }
-description = "Generate an optimized version of the wasm binary"
-dependencies = ["run-cargo-build"]
-install_crate = "wasm-opt"
-command = "wasm-opt"
-args = [
-    "-Oz",
-    "--output",
-    "target/wasm32-unknown-unknown/release/optimized.wasm",
-    "target/wasm32-unknown-unknown/release/playme.wasm",
-]
-
-[tasks.build-opt]
-condition = { env_set = [ "RUN_OPTIMIZATION" ] }
-description = "Generate optimized wasm binary and replace the old binary"
-dependencies = ["run-opt"]
-script_runner = "@shell"
-script = '''
-mv target/wasm32-unknown-unknown/release/optimized.wasm target/wasm32-unknown-unknown/release/playme.wasm
-'''
-
 [tasks.build-wasm-bin]
 description = "Build & link the wasm binary into a playable web-page"
-dependencies = ["build-opt"]
+dependencies = ["clean-wasm", "run-cargo-build"]
 install_crate = "wasm-bindgen-cli"
 command = "wasm-bindgen"
 args = [
@@ -62,26 +40,54 @@ args = [
     "target/wasm32-unknown-unknown/release/playme.wasm",
 ]
 
-[tasks.copy-static-stuff]
-description = "Copy static site files into the wasm-target directory"
+[tasks.copy-assets]
+description = "Copy static site files & assets into the wasm-target directory"
 dependencies = ["build-wasm-bin"]
 script_runner = "@shell"
 script = '''
-cp ./src/site/* ./wasm-target/
+cp -r ./src/site/* ./wasm-target/
+cp -r ./assets ./wasm-target/
 '''
 
 [tasks.build]
 description = "Run full build process and put output in wasm-target directory"
-run_task = "copy-static-stuff"
+run_task = "copy-assets"
 
-[tasks.build-release]
-env = { "RUN_OPTIMIZATION" = "true" }
-description = "Run full build process and put output in wasm-target directory"
-run_task = "copy-static-stuff"
+[tasks.default]
+run_task = "build"
 
 [tasks.serve]
 description = "Build and serve a copy of the playable page"
-dependencies = ["copy-static-stuff"]
+dependencies = ["copy-assets"]
 install_crate = "basic-http-server"
 command = "basic-http-server"
 args = ["./wasm-target"]
+
+# Not working at the moment :/
+
+# [tasks.build-release]
+# env = { "RUN_OPTIMIZATION" = "true" }
+# description = "Run full build process and put output in wasm-target directory"
+# run_task = "copy-static-stuff"
+
+# [tasks.run-opt]
+# condition = { env_set = [ "RUN_OPTIMIZATION" ] }
+# description = "Generate an optimized version of the wasm binary"
+# dependencies = ["run-cargo-build"]
+# install_crate = "wasm-opt"
+# command = "wasm-opt"
+# args = [
+#     "-Oz",
+#     "--output",
+#     "target/wasm32-unknown-unknown/release/optimized.wasm",
+#     "target/wasm32-unknown-unknown/release/playme.wasm",
+# ]
+
+# [tasks.build-opt]
+# condition = { env_set = [ "RUN_OPTIMIZATION" ] }
+# description = "Generate optimized wasm binary and replace the old binary"
+# dependencies = ["run-opt"]
+# script_runner = "@shell"
+# script = '''
+# mv target/wasm32-unknown-unknown/release/optimized.wasm target/wasm32-unknown-unknown/release/playme.wasm
+# '''
