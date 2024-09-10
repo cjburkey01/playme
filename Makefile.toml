@@ -104,7 +104,7 @@ run_task = "build"
 
 [tasks.serve]
 description = "Build and serve a copy of the playable page"
-dependencies = ["copy-assets"]
+dependencies = ["build"]
 install_crate = "basic-http-server"
 command = "basic-http-server"
 args = ["./wasm-target"]
