@@ -3,10 +3,10 @@ skip_core_tasks = true
 
 [env]
 PROFILE = "release"
-BUILD_TARGET_DIR = "${CARGO_MAKE_CRATE_TARGET_DIRECTORY}/wasm32-unknown-unknown/${PROFILE}"
-BINDGEN_TARGET_DIR = "${BUILD_TARGET_DIR}/wasm-bindgen-stuff"
+TARGET_DIR = "./target"
 BUILD_ARTIFACT_NAME = "${CARGO_MAKE_CRATE_NAME}"
-BUILD_OUTPUT_DIR = "wasm-target"
+BUILD_OUTPUT_DIR = "./wasm-target"
+BINDGEN_TARGET_DIR_NAME = "wasm-bindgen-target"
 
 [tasks.format]
 description = "Run rustfmt"
@@ -37,6 +37,8 @@ args = [
     "${PROFILE}",
     "--target",
     "wasm32-unknown-unknown",
+    "--target-dir",
+    "${TARGET_DIR}",
 ]
 
 [tasks.build-wasm-bin]
@@ -48,7 +50,7 @@ args = [
     "--out-name",
     "generated",
     "--out-dir",
-    "${BINDGEN_TARGET_DIR}",
+    "${BUILD_TARGET_DIR}/${BINDGEN_TARGET_DIR_NAME}",
     "--target",
     "web",
     "${BUILD_TARGET_DIR}/${BUILD_ARTIFACT_NAME}.wasm",
@@ -63,18 +65,17 @@ command = "wasm-opt"
 args = [
     "-Oz",
     "--output",
-    "${BINDGEN_TARGET_DIR}/optimized_bg.wasm",
-    "${BINDGEN_TARGET_DIR}/generated_bg.wasm",
+    "${BUILD_TARGET_DIR}/${BINDGEN_TARGET_DIR_NAME}/optimized_bg.wasm",
+    "${BUILD_TARGET_DIR}/${BINDGEN_TARGET_DIR_NAME}/generated_bg.wasm",
 ]
 
 [tasks.copy-opt]
 condition = { env_set = ["RUN_OPTIMIZATION"] }
 description = "Generate optimized wasm binary and replace the old binary"
 dependencies = ["run-opt"]
+cwd = "${BUILD_TARGET_DIR}/${BINDGEN_TARGET_DIR_NAME}"
 script_runner = "@shell"
-script = '''
-mv ${BINDGEN_TARGET_DIR}/optimized_bg.wasm ${BINDGEN_TARGET_DIR}/generated_bg.wasm
-'''
+script = "mv ./optimized_bg.wasm ./generated_bg.wasm"
 
 [tasks.copy-files]
 description = "Copy static site files & assets into the wasm-target directory"
@@ -84,18 +85,19 @@ script = '''
 mkdir -p ${BUILD_OUTPUT_DIR}/target
 cp -r ./src/site/* ${BUILD_OUTPUT_DIR}/
 cp -r ./assets ${BUILD_OUTPUT_DIR}/
-cp ${BINDGEN_TARGET_DIR}/generated_bg.wasm ${BUILD_OUTPUT_DIR}/target/
-cp ${BINDGEN_TARGET_DIR}/generated.js ${BUILD_OUTPUT_DIR}/target/
+cp ${BUILD_TARGET_DIR}/${BINDGEN_TARGET_DIR_NAME}/generated_bg.wasm ${BUILD_OUTPUT_DIR}/target/
+cp ${BUILD_TARGET_DIR}/${BINDGEN_TARGET_DIR_NAME}/generated.js ${BUILD_OUTPUT_DIR}/target/
 '''
 
 [tasks.build]
+env = { "BUILD_TARGET_DIR" = "${TARGET_DIR}/wasm32-unknown-unknown/${PROFILE}" }
 description = "Run full build process and put output in wasm-target directory"
 run_task = "copy-files"
 
 [tasks.build-release]
 env = { "PROFILE" = "release-wasm", "RUN_OPTIMIZATION" = "1" }
 description = "Build an optimized release version of the game"
-run_task = "copy-files"
+run_task = "build"
 
 [tasks.default]
 run_task = "build"
