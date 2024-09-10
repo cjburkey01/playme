@@ -25,7 +25,7 @@ jobs:
 
       # Build the game
       - name: Build release binary
-        run: cargo make build
+        run: cargo make build-release
 
       # Upload it to pages
       - uses: actions/upload-pages-artifact@v3

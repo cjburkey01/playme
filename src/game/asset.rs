@@ -28,7 +28,7 @@ impl Plugin for PlayMeAssetPlugin {
 }
 
 fn fake_asset_hiccup_second(time: Res<Time>) -> Progress {
-    if time.elapsed_seconds_f64() > 2.0 {
+    if time.elapsed_seconds_f64() > 1.0 {
         info!("Long fake task is completed! Just making sure stuff is happening here");
         true.into()
     } else {
