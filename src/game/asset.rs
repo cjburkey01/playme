@@ -1,11 +1,10 @@
+use super::component::{LoadingUiParent, LoadingUiText};
 use bevy::{
     diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
     prelude::*,
 };
 use bevy_asset_loader::prelude::*;
 use iyes_progress::prelude::*;
-
-use super::component::{LoadingUiParent, LoadingUiText};
 
 pub struct PlayMeAssetPlugin;
 
@@ -14,7 +13,9 @@ impl Plugin for PlayMeAssetPlugin {
         app.add_plugins(ProgressPlugin::new(AssetState::Loading).continue_to(AssetState::Finished))
             .init_state::<AssetState>()
             .add_loading_state(
-                LoadingState::new(AssetState::Loading).load_collection::<TileAssets>(),
+                LoadingState::new(AssetState::Loading)
+                    .load_collection::<TileAssets>()
+                    .load_collection::<PlayerAssets>(),
             )
             .add_systems(
                 Update,
@@ -45,12 +46,22 @@ pub enum AssetState {
 
 #[derive(AssetCollection, Resource)]
 pub struct TileAssets {
-    #[asset(path = "textures/tilemap1.png")]
+    #[asset(path = "textures/tile_atlas.png")]
     #[asset(image(sampler = nearest))]
-    tilemap1: Handle<Image>,
+    pub tile_atlas: Handle<Image>,
 
-    #[asset(texture_atlas_layout(tile_size_x = 64, tile_size_y = 32, columns = 10, rows = 20))]
-    atlas_layout: Handle<TextureAtlasLayout>,
+    #[asset(texture_atlas_layout(tile_size_x = 32, tile_size_y = 16, columns = 30, rows = 59, padding_x = 2, padding_y = 2, offset_x = 1, offset_y = 1))]
+    pub atlas_layout: Handle<TextureAtlasLayout>,
+}
+
+#[derive(AssetCollection, Resource)]
+pub struct PlayerAssets {
+    #[asset(path = "textures/player_animation.png")]
+    #[asset(image(sampler = nearest))]
+    pub player_animation: Handle<Image>,
+
+    #[asset(texture_atlas_layout(tile_size_x = 64, tile_size_y = 64, columns = 8, rows = 16))]
+    pub atlas_layout: Handle<TextureAtlasLayout>,
 }
 
 fn print_progress(

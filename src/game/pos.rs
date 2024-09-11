@@ -2,10 +2,10 @@ use super::board::{BOARD_HEIGHT, BOARD_SIZE, BOARD_WIDTH};
 use bevy::prelude::*;
 
 // Position of a tile on the game board.
-#[derive(Default, Copy, Clone, PartialEq, Eq, Hash)]
-pub struct BoardPos(UVec2);
+#[derive(Default, Debug, Component, Copy, Clone, PartialEq, Eq, Hash)]
+pub struct TilePos(UVec2);
 
-impl BoardPos {
+impl TilePos {
     pub fn new(pos: UVec2) -> Option<Self> {
         if pos.x < BOARD_WIDTH && pos.y < BOARD_HEIGHT {
             Some(Self(pos))
@@ -30,7 +30,7 @@ impl BoardPos {
         let pos = self.0.as_ivec2() + offset;
         let size = BOARD_SIZE.as_ivec2();
         if pos.x >= 0 && pos.y >= 0 && pos.x < size.x && pos.y < size.y {
-            Some(BoardPos(pos.as_uvec2()))
+            Some(TilePos(pos.as_uvec2()))
         } else {
             None
         }
@@ -39,6 +39,11 @@ impl BoardPos {
     pub fn as_world_pos(&self) -> Vec2 {
         let pos = self.0.as_ivec2();
         // See `playme/help/isogrid.svg`
-        IVec2::new(2 * (pos.x - pos.y), -pos.x - pos.y).as_vec2()
+        IVec2::new(2 * (pos.x - pos.y), -pos.x - pos.y).as_vec2() / 2.0
+    }
+
+    pub fn tile_index(&self) -> usize {
+        let UVec2 { x, y } = self.0;
+        (BOARD_WIDTH * y + x) as usize
     }
 }

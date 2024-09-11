@@ -4,15 +4,44 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bevy = "0.14.2"
 iyes_progress = "0.12.0"
 wasm-bindgen = "0.2.93"
-web-sys = "0.3.70"
-js-sys = "0.3.70"
+itertools = "0.13.0"
+
+[dependencies.bevy]
+version = "0.14.2"
+default-features = false
+features = [
+    "animation",
+    "bevy_asset",
+    "bevy_state",
+    "bevy_audio",
+    "bevy_color",
+    "bevy_gilrs",
+    "bevy_scene",
+    "bevy_winit",
+    "bevy_core_pipeline",
+    "bevy_render",
+    "bevy_sprite",
+    "bevy_text",
+    "bevy_ui",
+    "multi_threaded",
+    "png",
+    "vorbis",
+    "bevy_gizmos",
+    "default_font",
+    "webgl2",
+    "sysinfo_plugin",
+]
 
 [dependencies.bevy_asset_loader]
 version = "0.21.0"
 features = ["2d", "progress_tracking"]
+
+[dependencies.leafwing-input-manager]
+# Fix compile error
+git = "https://github.com/Leafwing-Studios/leafwing-input-manager"
+rev = "cd50ba147978dfbc4e824fa0aa9695996b2caf13"
 
 # Enable a small amount of optimization in the dev profile.
 [profile.dev]
