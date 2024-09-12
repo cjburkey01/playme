@@ -11,10 +11,10 @@ use leafwing_input_manager::{prelude::ActionState, InputManagerBundle};
 
 pub fn spawn_player_camera_system(mut commands: Commands) {
     commands.spawn((
-        PlayCamSpeed(2.0),
+        PlayCamSpeed(5.0),
         Camera2dBundle {
             projection: OrthographicProjection {
-                scaling_mode: ScalingMode::FixedVertical(10.0),
+                scaling_mode: ScalingMode::FixedVertical(20.0),
                 ..Camera2dBundle::default().projection
             },
             ..default()
@@ -38,11 +38,10 @@ pub fn add_player_sprite_system(
                 PlayerSpriteMarker,
                 SpriteBundle {
                     sprite: Sprite {
-                        custom_size: Some(Vec2::new(2.0, 2.0)),
+                        custom_size: Some(Vec2::new(4.0, 4.0)),
                         ..default()
                     },
                     texture: sprite_data.player_animation.clone(),
-                    transform: Transform::from_translation(Vec3::Z * 0.5),
                     ..default()
                 },
                 TextureAtlas {
@@ -73,11 +72,10 @@ pub fn player_movement_handle_fixed_system(
     let axis_pair = input.axis_pair(&InGameActions::Move);
     let delta_pos =
         axis_pair.normalize_or_zero() * speed * Vec2::new(1.0, 1.0 / 2.0) * time.delta_seconds();
-    info!("axis: {axis_pair:?} | delta: {delta_pos:?}");
 
     transform.translation += delta_pos.extend(0.0);
 
-    let ply_z = -transform.translation.y + 1.0;
+    let ply_z = -transform.translation.y + 2.0;
     sprite_transform.translation.z = ply_z;
 }
 

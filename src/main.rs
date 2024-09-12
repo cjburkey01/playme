@@ -4,15 +4,9 @@ use bevy::{asset::AssetMetaCheck, diagnostic::FrameTimeDiagnosticsPlugin, prelud
 use game::PlayMePlugin;
 use wasm_bindgen::prelude::*;
 
-#[wasm_bindgen]
-extern "C" {
-    fn hide_progress_screen();
-}
-
 fn main() {
-    hide_progress_screen();
-
     App::new()
+        // Core plugins
         .add_plugins((
             DefaultPlugins
                 .set(WindowPlugin {
@@ -31,5 +25,13 @@ fn main() {
         ))
         .insert_resource(Msaa::Off)
         .add_plugins(PlayMePlugin)
+        // HTML progress screen
+        .add_systems(Update, hide_progress_screen.run_if(run_once()))
+        // Start game!
         .run();
+}
+
+#[wasm_bindgen]
+extern "C" {
+    fn hide_progress_screen();
 }
