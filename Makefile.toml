@@ -19,7 +19,6 @@ description = "Delete the wasm-target directory"
 script_runner = "@shell"
 script = '''
 rm -rf ${BUILD_OUTPUT_DIR}
-rm -rf ${BINDGEN_TARGET_DIR}
 '''
 
 [tasks.clean]
