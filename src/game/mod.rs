@@ -35,6 +35,15 @@ impl Plugin for PlayMePlugin {
                 Update,
                 system::spawn_tile_map_system.run_if(resource_added::<board::TerrainBoard>),
             )
+            // Handle sprite frame animations
+            .add_systems(
+                Update,
+                (
+                    system::update_animation_manager_system,
+                    system::animate_sprite_system,
+                )
+                    .chain(),
+            )
             // Handle player movement when the tile board exists.
             // TODO: ADD BETTER GAME STATE HANDLER!
             .add_systems(

@@ -1,7 +1,10 @@
 use super::{
-    asset::{PlayerAssets, TileAssets},
+    asset::{BuiltInAnimationAssets, PlayerAssets, TileAssets},
     board::{TerrainBoard, BOARD_HEIGHT, BOARD_WIDTH},
-    component::{BoardParentMarker, PlayCamSpeed, PlayerSpriteMarker},
+    component::{
+        animation::{AnimatedSpriteBundle, SpriteAnimManager, SpriteAnimState, SpriteAnimation},
+        BoardParentMarker, PlayCamSpeed, PlayerSpriteMarker,
+    },
     input::{make_game_action_input_map, InGameActions},
     pos::TilePos,
 };
@@ -27,6 +30,7 @@ pub fn add_player_sprite_system(
     mut commands: Commands,
     player: Query<Entity, With<PlayCamSpeed>>,
     sprite_data: Res<PlayerAssets>,
+    sprite_anims: Res<BuiltInAnimationAssets>,
 ) {
     if let Some(mut ply_ent) = player
         .get_single()
@@ -44,9 +48,23 @@ pub fn add_player_sprite_system(
                     texture: sprite_data.player_animation.clone(),
                     ..default()
                 },
-                TextureAtlas {
-                    layout: sprite_data.atlas_layout.clone(),
-                    index: 1,
+                TextureAtlas::from(sprite_data.atlas_layout.clone()),
+                AnimatedSpriteBundle {
+                    state: SpriteAnimState::new(10),
+                    manager: SpriteAnimManager::new(
+                        [
+                            &sprite_anims.player_walk_sw,
+                            &sprite_anims.player_walk_w,
+                            &sprite_anims.player_walk_nw,
+                            &sprite_anims.player_walk_n,
+                            &sprite_anims.player_walk_ne,
+                            &sprite_anims.player_walk_e,
+                            &sprite_anims.player_walk_se,
+                            &sprite_anims.player_walk_s,
+                        ]
+                        .into_iter()
+                        .cloned(),
+                    ),
                 },
             ));
         });
@@ -59,12 +77,19 @@ pub fn player_movement_handle_fixed_system(
         (&mut Transform, &PlayCamSpeed, &ActionState<InGameActions>),
         Without<PlayerSpriteMarker>,
     >,
-    mut sprite_entity: Query<&mut Transform, With<PlayerSpriteMarker>>,
+    mut sprite_entity: Query<
+        (&mut Transform, &mut SpriteAnimManager, &mut SpriteAnimState),
+        With<PlayerSpriteMarker>,
+    >,
 ) {
-    let Ok((mut transform, PlayCamSpeed(speed), input)) = player_entity.get_single_mut() else {
-        return;
-    };
-    let Ok(mut sprite_transform) = sprite_entity.get_single_mut() else {
+    let (
+        Ok((mut transform, PlayCamSpeed(speed), input)),
+        Ok((mut sprite_transform, mut anim_manager, mut anim_state)),
+    ) = (
+        player_entity.get_single_mut(),
+        sprite_entity.get_single_mut(),
+    )
+    else {
         return;
     };
     let speed = *speed;
@@ -77,6 +102,27 @@ pub fn player_movement_handle_fixed_system(
 
     let ply_z = -transform.translation.y + 2.0;
     sprite_transform.translation.z = ply_z;
+
+    anim_state.paused = axis_pair.length_squared() < 0.001;
+    if !anim_state.paused {
+        // 360º / 8 directions, 45º per animation
+        let angle = axis_pair.angle_between(Vec2::Y).to_degrees() + 179.9;
+        let anim_index = match angle {
+            0.0..45.0 => 0,
+            45.0..90.0 => 1,
+            90.0..135.0 => 2,
+            135.0..180.0 => 3,
+            180.0..225.0 => 4,
+            225.0..270.0 => 5,
+            270.0..315.0 => 6,
+            315.0..=360.0 => 7,
+            _ => 0,
+        };
+        info!("angle: {angle:.2}");
+        if anim_index < anim_manager.animations.len() {
+            anim_manager.current = anim_index;
+        }
+    }
 }
 
 pub fn on_exit_asset_load_state_system(mut commands: Commands) {
@@ -114,4 +160,65 @@ pub fn spawn_tile_map_system(
                 ));
             }
         });
+}
+
+pub fn update_animation_manager_system(
+    mut commands: Commands,
+    mut managers: Query<(
+        Entity,
+        Option<&mut Handle<SpriteAnimation>>,
+        &SpriteAnimManager,
+    )>,
+) {
+    for (entity, current_anim, manager) in managers.iter_mut() {
+        if manager.current < manager.animations.len() {
+            let anim_in_manager = &manager.animations[manager.current];
+
+            match current_anim {
+                Some(mut current_anim) => {
+                    if anim_in_manager != current_anim.as_ref() {
+                        *current_anim = anim_in_manager.clone();
+                    }
+                }
+                None => {
+                    if let Some(mut entity) = commands.get_entity(entity) {
+                        entity.insert(anim_in_manager.clone());
+                    }
+                }
+            }
+        }
+    }
+}
+
+pub fn animate_sprite_system(
+    time: Res<Time>,
+    atlas_info: Res<Assets<TextureAtlasLayout>>,
+    anim_infos: Res<Assets<SpriteAnimation>>,
+    mut sprites: Query<(
+        Ref<Handle<SpriteAnimation>>,
+        &mut SpriteAnimState,
+        &mut TextureAtlas,
+    )>,
+) {
+    for (anim_info, mut anim_state, mut atlas) in sprites.iter_mut() {
+        if anim_state.paused {
+            continue;
+        }
+        let timer = anim_state.timer.tick(time.delta());
+        // Check animation when animation handle changes regardless of timer
+        if anim_info.is_changed() || timer.just_finished() {
+            let (Some(atlas_info), Some(anim_info)) = (
+                atlas_info.get(&atlas.layout),
+                anim_infos.get(anim_info.into_inner()),
+            ) else {
+                continue;
+            };
+
+            let frame_num = (anim_state.frame_num + 1) % anim_info.frames.len();
+            let sprite_index = anim_info.frames[frame_num].min(atlas_info.textures.len());
+
+            anim_state.frame_num = frame_num;
+            atlas.index = sprite_index;
+        }
+    }
 }
