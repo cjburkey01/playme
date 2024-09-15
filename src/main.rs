@@ -1,6 +1,7 @@
 mod game;
 
 use bevy::{asset::AssetMetaCheck, diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
+use bevy_egui::EguiPlugin;
 use game::PlayMePlugin;
 use wasm_bindgen::prelude::*;
 
@@ -22,6 +23,7 @@ fn main() {
                     ..default()
                 }),
             FrameTimeDiagnosticsPlugin,
+            EguiPlugin,
         ))
         .insert_resource(Msaa::Off)
         .add_plugins(PlayMePlugin)

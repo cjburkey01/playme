@@ -2,6 +2,7 @@
 name = "playme"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
 
 [dependencies]
 iyes_progress = "0.12.0"
@@ -32,6 +33,11 @@ features = [
     "webgl2",
     "sysinfo_plugin",
 ]
+
+[dependencies.bevy_egui]
+version = "0.29.0"
+default-features = false
+features = ["default_fonts", "render"]
 
 [dependencies.bevy_asset_loader]
 version = "0.21.0"
