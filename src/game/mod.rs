@@ -3,12 +3,13 @@ pub mod board;
 pub mod component;
 pub mod input;
 pub mod pos;
+pub mod state;
 pub mod system;
 pub mod ui;
 
-use asset::AssetState;
 use bevy::prelude::*;
 use leafwing_input_manager::plugin::InputManagerPlugin;
+use state::MainGameState;
 
 pub struct PlayMePlugin;
 
@@ -20,12 +21,13 @@ impl Plugin for PlayMePlugin {
                 asset::PlayMeAssetPlugin,
                 ui::PlayMeUiPlugin,
             ))
+            .init_state::<MainGameState>()
             // Spawn the player
-            .add_systems(PostStartup, system::spawn_player_camera_system)
+            .add_systems(Startup, system::spawn_player_camera_system)
             .add_systems(
-                OnEnter(AssetState::Finished),
+                OnEnter(MainGameState::InGame),
                 (
-                    system::on_exit_asset_load_state_system,
+                    system::add_terrain_board_resource,
                     system::add_player_sprite_system,
                 ),
             )
@@ -49,8 +51,8 @@ impl Plugin for PlayMePlugin {
             .add_systems(
                 Update,
                 system::player_movement_handle_fixed_system
-                    .run_if(resource_exists::<board::TerrainBoard>)
-                    .run_if(any_with_component::<component::PlayCamSpeed>),
+                    .run_if(in_state(MainGameState::InGame))
+                    .run_if(resource_exists::<board::TerrainBoard>),
             );
     }
 }

@@ -1,5 +1,5 @@
 use super::{
-    asset::{BuiltInAnimationAssets, PlayerAssets, TileAssets},
+    asset::required::{BuiltInAnimationAssets, PlayerAssets, TileAssets},
     board::{TerrainBoard, BOARD_HEIGHT, BOARD_WIDTH},
     component::{
         animation::{AnimatedSpriteBundle, SpriteAnimManager, SpriteAnimState, SpriteAnimation},
@@ -50,7 +50,7 @@ pub fn add_player_sprite_system(
                 },
                 TextureAtlas::from(sprite_data.atlas_layout.clone()),
                 AnimatedSpriteBundle {
-                    state: SpriteAnimState::new(10),
+                    state: SpriteAnimState::new(20),
                     manager: SpriteAnimManager::new(
                         [
                             &sprite_anims.player_walk_sw,
@@ -107,25 +107,14 @@ pub fn player_movement_handle_fixed_system(
     if !anim_state.paused {
         // 360º / 8 directions, 45º per animation
         let angle = axis_pair.angle_between(Vec2::Y).to_degrees() + 179.9;
-        let anim_index = match angle {
-            0.0..45.0 => 0,
-            45.0..90.0 => 1,
-            90.0..135.0 => 2,
-            135.0..180.0 => 3,
-            180.0..225.0 => 4,
-            225.0..270.0 => 5,
-            270.0..315.0 => 6,
-            315.0..=360.0 => 7,
-            _ => 0,
-        };
-        info!("angle: {angle:.2}");
+        let anim_index = (angle.max(0.0).min(360.0) / 45.0) as usize;
         if anim_index < anim_manager.animations.len() {
             anim_manager.current = anim_index;
         }
     }
 }
 
-pub fn on_exit_asset_load_state_system(mut commands: Commands) {
+pub fn add_terrain_board_resource(mut commands: Commands) {
     commands.insert_resource(TerrainBoard::default());
 }
 
