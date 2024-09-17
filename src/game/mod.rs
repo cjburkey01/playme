@@ -2,6 +2,7 @@ pub mod asset;
 pub mod board;
 pub mod component;
 pub mod input;
+pub mod picking;
 pub mod pos;
 pub mod state;
 pub mod system;
@@ -9,6 +10,7 @@ pub mod ui;
 
 use bevy::prelude::*;
 use leafwing_input_manager::plugin::InputManagerPlugin;
+use picking::MousePosInfo;
 use state::MainGameState;
 
 pub struct PlayMePlugin;
@@ -21,6 +23,7 @@ impl Plugin for PlayMePlugin {
                 asset::PlayMeAssetPlugin,
                 ui::PlayMeUiPlugin,
             ))
+            .init_resource::<MousePosInfo>()
             .init_state::<MainGameState>()
             // Spawn the player
             .add_systems(Startup, system::spawn_player_camera_system)
@@ -46,13 +49,17 @@ impl Plugin for PlayMePlugin {
                 )
                     .chain(),
             )
-            // Handle player movement when the tile board exists.
-            // TODO: ADD BETTER GAME STATE HANDLER!
+            .add_systems(
+                FixedUpdate,
+                system::integrate_player_pos_system.run_if(in_state(MainGameState::InGame)),
+            )
             .add_systems(
                 Update,
-                system::player_movement_handle_fixed_system
-                    .run_if(in_state(MainGameState::InGame))
-                    .run_if(resource_exists::<board::TerrainBoard>),
+                (
+                    system::handle_player_input_system,
+                    picking::update_mouse_pos_system,
+                )
+                    .run_if(in_state(MainGameState::InGame)),
             );
     }
 }

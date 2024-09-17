@@ -1,9 +1,12 @@
+use crate::game::pos::WorldPos;
+
 use super::{
     asset::required::{BuiltInAnimationAssets, PlayerAssets, TileAssets},
     board::{TerrainBoard, BOARD_HEIGHT, BOARD_WIDTH},
     component::{
         animation::{AnimatedSpriteBundle, SpriteAnimManager, SpriteAnimState, SpriteAnimation},
-        BoardParentMarker, PlayCamSpeed, PlayerSpriteMarker,
+        BoardParentMarker, PlayerCameraBundle, PlayerSpriteMarker, PlyCamConfig,
+        PlyCamInputAxisPair, PlyCamVelocity,
     },
     input::{make_game_action_input_map, InGameActions},
     pos::TilePos,
@@ -14,7 +17,10 @@ use leafwing_input_manager::{prelude::ActionState, InputManagerBundle};
 
 pub fn spawn_player_camera_system(mut commands: Commands) {
     commands.spawn((
-        PlayCamSpeed(5.0),
+        PlayerCameraBundle {
+            cam_config: PlyCamConfig(5.0),
+            ..default()
+        },
         Camera2dBundle {
             projection: OrthographicProjection {
                 scaling_mode: ScalingMode::FixedVertical(20.0),
@@ -28,7 +34,7 @@ pub fn spawn_player_camera_system(mut commands: Commands) {
 
 pub fn add_player_sprite_system(
     mut commands: Commands,
-    player: Query<Entity, With<PlayCamSpeed>>,
+    player: Query<Entity, With<PlyCamConfig>>,
     sprite_data: Res<PlayerAssets>,
     sprite_anims: Res<BuiltInAnimationAssets>,
 ) {
@@ -71,10 +77,26 @@ pub fn add_player_sprite_system(
     }
 }
 
-pub fn player_movement_handle_fixed_system(
-    time: Res<Time>,
+pub fn handle_player_input_system(
+    mut player_entity: Query<(
+        &mut PlyCamVelocity,
+        &mut PlyCamInputAxisPair,
+        &PlyCamConfig,
+        &ActionState<InGameActions>,
+    )>,
+) {
+    if let Ok((mut velocity, mut input_pair, PlyCamConfig(speed), input)) =
+        player_entity.get_single_mut()
+    {
+        input_pair.0 = input.axis_pair(&InGameActions::Move);
+        velocity.0 = *speed * input_pair.0.normalize_or_zero() * Vec2::new(1.0, 1.0 / 2.0);
+    }
+}
+
+pub fn integrate_player_pos_system(
+    time: Res<Time<Fixed>>,
     mut player_entity: Query<
-        (&mut Transform, &PlayCamSpeed, &ActionState<InGameActions>),
+        (&mut Transform, &PlyCamVelocity, &PlyCamInputAxisPair),
         Without<PlayerSpriteMarker>,
     >,
     mut sprite_entity: Query<
@@ -83,7 +105,7 @@ pub fn player_movement_handle_fixed_system(
     >,
 ) {
     let (
-        Ok((mut transform, PlayCamSpeed(speed), input)),
+        Ok((mut transform, PlyCamVelocity(cam_velocity), PlyCamInputAxisPair(axis_pair))),
         Ok((mut sprite_transform, mut anim_manager, mut anim_state)),
     ) = (
         player_entity.get_single_mut(),
@@ -92,12 +114,8 @@ pub fn player_movement_handle_fixed_system(
     else {
         return;
     };
-    let speed = *speed;
 
-    let axis_pair = input.axis_pair(&InGameActions::Move);
-    let delta_pos =
-        axis_pair.normalize_or_zero() * speed * Vec2::new(1.0, 1.0 / 2.0) * time.delta_seconds();
-
+    let delta_pos = *cam_velocity * time.delta_seconds();
     transform.translation += delta_pos.extend(0.0);
 
     let ply_z = -transform.translation.y + 2.0;
@@ -131,7 +149,7 @@ pub fn spawn_tile_map_system(
             for (y, x) in iproduct!(0u32..BOARD_HEIGHT, 0u32..BOARD_WIDTH) {
                 let tile_pos = TilePos::new(UVec2::new(x, y)).expect("improper board tile pos???");
                 let tile_type = tile_data.tile(tile_pos);
-                let world_pos = tile_pos.as_world_pos();
+                let world_pos = WorldPos::from(tile_pos).0;
                 c.spawn((
                     SpriteBundle {
                         sprite: Sprite {
