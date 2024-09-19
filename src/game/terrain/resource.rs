@@ -1,30 +1,6 @@
+use super::TerrainTile;
+use crate::game::{pos::TilePos, terrain::BOARD_AREA};
 use bevy::prelude::*;
-
-use super::pos::TilePos;
-
-pub const BOARD_WIDTH: u32 = 25;
-pub const BOARD_HEIGHT: u32 = 25;
-pub const BOARD_AREA: u32 = BOARD_WIDTH * BOARD_HEIGHT;
-pub const BOARD_SIZE: UVec2 = UVec2 {
-    x: BOARD_WIDTH,
-    y: BOARD_HEIGHT,
-};
-
-#[derive(Default, Debug, Copy, Clone, PartialEq, Eq)]
-pub enum TerrainTile {
-    #[default]
-    Ocean,
-    Grass,
-}
-
-impl TerrainTile {
-    pub fn sprite_index(&self) -> usize {
-        match self {
-            TerrainTile::Ocean => 10,
-            TerrainTile::Grass => 0,
-        }
-    }
-}
 
 #[derive(Resource)]
 pub struct TerrainBoard(Vec<TerrainTile>);

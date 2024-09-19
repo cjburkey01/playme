@@ -22,6 +22,25 @@ pub struct TileAssets {
 }
 
 #[derive(AssetCollection, Resource)]
+pub struct UiAssets {
+    #[asset(path = "textures/ui_atlas.png")]
+    #[asset(image(sampler = nearest))]
+    pub ui_atlas: Handle<Image>,
+
+    #[asset(texture_atlas_layout(
+        tile_size_x = 32,
+        tile_size_y = 32,
+        columns = 15,
+        rows = 15,
+        padding_x = 2,
+        padding_y = 2,
+        offset_x = 1,
+        offset_y = 1
+    ))]
+    pub atlas_layout: Handle<TextureAtlasLayout>,
+}
+
+#[derive(AssetCollection, Resource)]
 pub struct PlayerAssets {
     #[asset(path = "textures/player_animation.png")]
     #[asset(image(sampler = nearest))]

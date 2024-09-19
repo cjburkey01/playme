@@ -1,51 +1,32 @@
-use bevy::prelude::*;
-use itertools::iproduct;
-
+use super::TerrainState;
 use crate::game::{
-    board::{BOARD_HEIGHT, BOARD_WIDTH},
-    pos::{TilePos, WorldPos},
-};
-
-use super::{
     asset::required::TileAssets,
-    board::{TerrainBoard, TerrainTile},
-    MainGameState,
+    pos::{TilePos, WorldPos},
+    terrain::{BoardParentMarker, TerrainBoard, TerrainTile, BOARD_HEIGHT, BOARD_WIDTH},
 };
+use bevy::prelude::*;
 
-pub struct TerrainPlugin;
+pub(super) fn start_loading_terrain_system(mut commands: Commands) {
+    info!("create tile board");
 
-impl Plugin for TerrainPlugin {
-    fn build(&self, app: &mut App) {
-        app.init_state::<TerrainState>()
-            .add_systems(OnEnter(MainGameState::InGame), spawn_tile_map_system)
-            .add_systems(OnExit(TerrainState::NotLoaded), despawn_tile_map_system);
-    }
+    commands.insert_resource(NextState::Pending(TerrainState::StartLoading));
+    commands.insert_resource(TerrainBoard::new(TerrainTile::Grass));
 }
 
-#[derive(Debug, Component, Copy, Clone)]
-pub struct BoardParentMarker;
-
-#[derive(Debug, Default, States, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum TerrainState {
-    #[default]
-    NotLoaded,
-    Ready,
-}
-
-fn spawn_tile_map_system(
+pub(super) fn spawn_tile_map_system(
     mut commands: Commands,
     sprite_data: Res<TileAssets>,
+    tile_data: Res<TerrainBoard>,
     mut terrain_state: ResMut<NextState<TerrainState>>,
 ) {
-    info!("spawning tile board");
+    info!("spawning terrain tile board");
 
-    let tile_data = TerrainBoard::new(TerrainTile::Grass);
     terrain_state.set(TerrainState::Ready);
 
     commands
         .spawn((SpatialBundle::INHERITED_IDENTITY, BoardParentMarker))
         .with_children(|c| {
-            for (y, x) in iproduct!(0u32..BOARD_HEIGHT, 0u32..BOARD_WIDTH) {
+            for (y, x) in itertools::iproduct!(0u32..BOARD_HEIGHT, 0u32..BOARD_WIDTH) {
                 let tile_pos = TilePos::new(UVec2::new(x, y)).expect("improper board tile pos???");
                 let tile_type = tile_data.tile(tile_pos);
                 let world_pos = WorldPos::from(tile_pos).0;
@@ -66,10 +47,9 @@ fn spawn_tile_map_system(
                 ));
             }
         });
-    commands.insert_resource(tile_data);
 }
 
-fn despawn_tile_map_system(
+pub(super) fn despawn_tile_map_system(
     mut commands: Commands,
     board_query: Query<Entity, With<BoardParentMarker>>,
 ) {

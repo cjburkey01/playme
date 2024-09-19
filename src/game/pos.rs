@@ -1,4 +1,4 @@
-use super::board::{BOARD_HEIGHT, BOARD_SIZE, BOARD_WIDTH};
+use super::terrain::{BOARD_HEIGHT, BOARD_SIZE, BOARD_WIDTH};
 use bevy::prelude::*;
 
 // Position of a tile on the game board.
