@@ -1,4 +1,4 @@
-use crate::game::component::animation::SpriteAnimation;
+use crate::game::animation::SpriteAnimation;
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 

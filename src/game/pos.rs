@@ -15,10 +15,10 @@ impl TilePos {
     }
 
     pub fn unclamped_from_world_pos(world_pos: Vec2) -> IVec2 {
-        let world_pos = world_pos * 2.0 - Vec2::new(0.5, 0.5);
-        let tile_x = (world_pos.x - 2.0 * world_pos.y) / 4.0;
-        let tile_y = -tile_x - world_pos.y;
-        Vec2::new(tile_x, tile_y).floor().as_ivec2()
+        let world_pos = world_pos /*+ Vec2::new(0.5, 0.5)*/;
+        let tile_x = (world_pos.x - 2.0 * world_pos.y) / 2.0;
+        let tile_y = -world_pos.x / 2.0 - world_pos.y;
+        Vec2::new(tile_x, tile_y).round().as_ivec2()
     }
 
     #[allow(unused)]

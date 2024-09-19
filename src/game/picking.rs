@@ -1,9 +1,27 @@
-use super::pos::{TilePos, WorldPos};
+use super::{
+    pos::{TilePos, WorldPos},
+    MainGameState,
+};
 use bevy::prelude::*;
+
+pub struct PickingPlugin;
+
+impl Plugin for PickingPlugin {
+    fn build(&self, app: &mut App) {
+        app.init_resource::<MousePosInfo>()
+            .init_state::<MainGameState>()
+            .add_systems(
+                Update,
+                update_mouse_pos_system.run_if(in_state(MainGameState::InGame)),
+            );
+    }
+}
 
 #[derive(Debug, Default, Resource, Copy, Clone)]
 pub struct MousePosInfo {
+    #[allow(unused)]
     pub world: Vec2,
+    #[allow(unused)]
     pub tile: IVec2,
     pub board_tile: Option<TilePos>,
 }

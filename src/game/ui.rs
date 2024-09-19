@@ -1,4 +1,4 @@
-use super::state::MainGameState;
+use super::MainGameState;
 use bevy::{
     color::palettes::css::{CORNFLOWER_BLUE, WHITE, YELLOW},
     prelude::*,

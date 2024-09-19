@@ -20,8 +20,10 @@ pub enum InGameActions {
     Action,
 }
 
-pub fn make_game_action_input_map() -> InputMap<InGameActions> {
-    InputMap::default()
-        .with_dual_axis(InGameActions::Move, KeyboardVirtualDPad::WASD)
-        .with_dual_axis(InGameActions::Move, KeyboardVirtualDPad::ARROW_KEYS)
+impl InGameActions {
+    pub fn make_input_map() -> InputMap<Self> {
+        InputMap::default()
+            .with_dual_axis(Self::Move, KeyboardVirtualDPad::WASD)
+            .with_dual_axis(Self::Move, KeyboardVirtualDPad::ARROW_KEYS)
+    }
 }

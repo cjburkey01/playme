@@ -1,6 +1,6 @@
 pub mod required;
 
-use super::{component::animation::SpriteAnimation, state::MainGameState, ui::LoadingUiText};
+use super::{animation::SpriteAnimation, ui::LoadingUiText, MainGameState};
 use bevy::{
     diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
     prelude::*,
