@@ -7,7 +7,7 @@ use bevy::{
 };
 use bevy_asset_loader::prelude::*;
 use iyes_progress::prelude::*;
-use required::{PlayerAssets, TileAssets, UiAssets};
+use required::{ObjectAssets, PlayerAssets, TileAssets, UiAssets};
 
 pub struct PlayMeAssetPlugin;
 
@@ -21,6 +21,7 @@ impl Plugin for PlayMeAssetPlugin {
             LoadingState::new(MainGameState::Loading)
                 .load_collection::<UiAssets>()
                 .load_collection::<TileAssets>()
+                .load_collection::<ObjectAssets>()
                 .load_collection::<PlayerAssets>(),
         )
         .add_systems(Startup, required::load_builtin_animations_system)

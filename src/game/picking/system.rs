@@ -4,6 +4,7 @@ use super::{MousePosInfo, PickerTileOutlineEntity};
 use crate::game::{
     asset::required::UiAssets,
     pos::{TilePos, WorldPos},
+    terrain::TILE_WORLD_WIDTH,
 };
 
 pub(super) fn update_mouse_pos_system(
@@ -30,7 +31,7 @@ pub(super) fn spawn_outline_entity_system(mut commands: Commands, ui_assets: Res
         PickerTileOutlineEntity,
         SpriteBundle {
             sprite: Sprite {
-                custom_size: Some(Vec2::ONE * 2.0),
+                custom_size: Some(Vec2::splat(TILE_WORLD_WIDTH)),
                 ..default()
             },
             texture: ui_assets.ui_atlas.clone(),

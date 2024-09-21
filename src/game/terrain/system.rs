@@ -2,7 +2,9 @@ use super::TerrainState;
 use crate::game::{
     asset::required::TileAssets,
     pos::{TilePos, WorldPos},
-    terrain::{BoardParentMarker, TerrainBoard, TerrainTile, BOARD_HEIGHT, BOARD_WIDTH},
+    terrain::{
+        BoardParentMarker, TerrainBoard, TerrainTile, BOARD_HEIGHT, BOARD_WIDTH, TILE_WORLD_WIDTH,
+    },
 };
 use bevy::prelude::*;
 
@@ -29,15 +31,14 @@ pub(super) fn spawn_tile_map_system(
             for (y, x) in itertools::iproduct!(0u32..BOARD_HEIGHT, 0u32..BOARD_WIDTH) {
                 let tile_pos = TilePos::new(UVec2::new(x, y)).expect("improper board tile pos???");
                 let tile_type = tile_data.tile(tile_pos);
-                let world_pos = WorldPos::from(tile_pos).0;
                 c.spawn((
                     SpriteBundle {
                         sprite: Sprite {
-                            custom_size: Some(Vec2::new(2.0, 1.0)),
+                            custom_size: Some(Vec2::new(TILE_WORLD_WIDTH, TILE_WORLD_WIDTH / 2.0)),
                             ..default()
                         },
                         texture: sprite_data.tile_atlas.clone(),
-                        transform: Transform::from_translation(world_pos.extend(-world_pos.y)),
+                        transform: WorldPos::from(tile_pos).into(),
                         ..default()
                     },
                     TextureAtlas {

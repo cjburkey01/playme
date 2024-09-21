@@ -1,4 +1,8 @@
-use crate::game::animation::{SpriteAnimManager, SpriteAnimState};
+use crate::game::{
+    animation::{SpriteAnimManager, SpriteAnimState},
+    pos::WorldPos,
+    terrain::TILE_WORLD_WIDTH,
+};
 
 use super::{InGameActions, PlayerSpriteMarker, PlyCamConfig, PlyCamInputAxisPair, PlyCamVelocity};
 use bevy::prelude::*;
@@ -45,8 +49,8 @@ pub fn integrate_player_pos_system(
     let delta_pos = *cam_velocity * time.delta_seconds();
     transform.translation += delta_pos.extend(0.0);
 
-    let ply_z = -transform.translation.y + 2.0;
-    sprite_transform.translation.z = ply_z;
+    sprite_transform.translation.z =
+        WorldPos(transform.translation.xy()).world_with_z().z + 5.0 * TILE_WORLD_WIDTH / 8.0 + 0.05;
 
     anim_state.paused = axis_pair.length_squared() < 0.001;
     if !anim_state.paused {

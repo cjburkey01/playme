@@ -1,4 +1,4 @@
-use super::terrain::{BOARD_HEIGHT, BOARD_SIZE, BOARD_WIDTH};
+use super::terrain::{BOARD_HEIGHT, BOARD_SIZE, BOARD_WIDTH, TILE_WORLD_WIDTH};
 use bevy::prelude::*;
 
 // Position of a tile on the game board.
@@ -15,7 +15,7 @@ impl TilePos {
     }
 
     pub fn unclamped_from_world_pos(world_pos: Vec2) -> IVec2 {
-        let world_pos = world_pos /*+ Vec2::new(0.5, 0.5)*/;
+        let world_pos = world_pos * 2.0 / TILE_WORLD_WIDTH /*+ Vec2::new(0.5, 0.5)*/;
         let tile_x = (world_pos.x - 2.0 * world_pos.y) / 2.0;
         let tile_y = -world_pos.x / 2.0 - world_pos.y;
         Vec2::new(tile_x, tile_y).round().as_ivec2()
@@ -70,10 +70,26 @@ impl TryFrom<WorldPos> for TilePos {
 #[derive(Default, Debug, Copy, Clone, PartialEq)]
 pub struct WorldPos(pub Vec2);
 
+impl WorldPos {
+    pub fn sprite_z(&self) -> f32 {
+        -self.0.y
+    }
+
+    pub fn world_with_z(&self) -> Vec3 {
+        self.0.extend(self.sprite_z())
+    }
+}
+
 impl From<TilePos> for WorldPos {
     fn from(value: TilePos) -> Self {
         let pos = value.0.as_ivec2();
         // See `playme/help/isogrid.svg`
-        Self(IVec2::new(2 * (pos.x - pos.y), -pos.x - pos.y).as_vec2() / 2.0)
+        Self(IVec2::new(2 * (pos.x - pos.y), -pos.x - pos.y).as_vec2() * TILE_WORLD_WIDTH / 4.0)
+    }
+}
+
+impl From<WorldPos> for Transform {
+    fn from(value: WorldPos) -> Self {
+        Transform::from_translation(value.world_with_z())
     }
 }
