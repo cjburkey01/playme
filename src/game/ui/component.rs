@@ -14,3 +14,7 @@ pub struct MainMenuUiParent;
 
 #[derive(Debug, Component, Copy, Clone)]
 pub struct MainMenuPlayButton;
+
+#[allow(unused)]
+#[derive(Debug, Component, Clone)]
+pub struct StandardUiButton;

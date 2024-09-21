@@ -2,10 +2,9 @@ mod component;
 mod init;
 mod system;
 
-pub use component::*;
-
 use super::{terrain::TerrainState, MainGameState};
 use bevy::prelude::*;
+pub use component::*;
 
 pub const BUTTON_BACK: Color = Color::srgb(0.15, 0.15, 0.15);
 pub const BUTTON_HOVER_BACK: Color = Color::srgb(0.25, 0.25, 0.25);
@@ -29,7 +28,11 @@ impl Plugin for PlayMeUiPlugin {
         )
         .add_systems(
             OnExit(MainGameState::Loading),
-            system::update_ui_display::<LoadingUiParent>(Display::None),
+            (
+                init::init_ui_with_assets,
+                system::update_ui_display::<LoadingUiParent>(Display::None),
+            )
+                .chain(),
         )
         .add_systems(
             OnEnter(MainGameState::MainMenu),

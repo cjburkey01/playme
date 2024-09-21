@@ -21,7 +21,7 @@ pub struct TileAssets {
     pub atlas_layout: Handle<TextureAtlasLayout>,
 }
 
-#[derive(AssetCollection, Resource)]
+#[derive(AssetCollection, Resource, Clone)]
 pub struct UiAssets {
     #[asset(path = "textures/ui_atlas.png")]
     #[asset(image(sampler = nearest))]
