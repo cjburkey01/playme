@@ -15,15 +15,13 @@ impl GameObjectType {
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum TreeVariant {
-    GreenBirch,
-    BrownBirch,
+    GreenTree,
 }
 
 impl TreeVariant {
     pub fn object_atlas_index(&self) -> usize {
         match self {
-            Self::GreenBirch => 0,
-            Self::BrownBirch => 1,
+            Self::GreenTree => 0,
         }
     }
 }

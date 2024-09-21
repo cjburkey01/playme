@@ -45,7 +45,7 @@ impl Plugin for TerrainPlugin {
 
 fn spawn_tmp_object_system(mut commands: Commands) {
     commands.trigger(TriggerSpawnGameObject {
-        obj_type: GameObjectType::Tree(TreeVariant::GreenBirch),
+        obj_type: GameObjectType::Tree(TreeVariant::GreenTree),
         tile_pos: TilePos::new_clamped(IVec2::ONE),
     })
 }
